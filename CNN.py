@@ -1,11 +1,20 @@
 import os.path
 
+# Pytorch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
+
+# # Plotting
+# import matplotlib
+# matplotlib.use("Agg")
+# import matplotlib.pyplot as plt
+
+# Dataset Initialization
+from torch.utils.data import random_split
+import ChordDataset
+from torch.utils.data import DataLoader
+
 
 class ChordCNN(nn.Module):
 
@@ -28,7 +37,10 @@ class ChordCNN(nn.Module):
 
         # Fully Connected Layer
         self.fc1 = nn.Linear(64 * 16 * 16, 128)
-        self.fc2 = nn.Linear(128, 3) # 3 outputs for C, G, D
+        self.fc2 = nn.Linear(128, 7)
+
+
+        self.dataset_loaded = False
 
 
 
@@ -49,11 +61,11 @@ class ChordCNN(nn.Module):
 
 def training_loop(epochs, model, loader, criterion, optimizer, device="cpu"):
 
-    fig, ax = plt.subplots()
+    # fig, ax = plt.subplots()
 
     train_losses = []
-    ax.set_xlabel("Epoch")
-    ax.set_ylabel("Loss")
+    # ax.set_xlabel("Epoch")
+    # ax.set_ylabel("Loss")
 
     for epoch in range(int(epochs)):
         model.train()
@@ -78,10 +90,10 @@ def training_loop(epochs, model, loader, criterion, optimizer, device="cpu"):
 
         print(f"Epoch {epoch+1}, Loss: {total_loss:.4f}")
 
-    plt.legend()
-    plt.grid(True)
-    plt.plot(train_losses)
-    plt.show()
+    # plt.legend()
+    # plt.grid(True)
+    # plt.plot(train_losses)
+    # plt.show()
 
 def get_accuracy(model, loader, device="cpu") -> None:
     correct = 0
@@ -115,3 +127,19 @@ def load_model(model, device="cpu"):
     model.eval()
 
     print("Model has been successfully loaded.")
+
+def initialize_dataset():
+    dataset = ChordDataset.ChordDataset("data/")
+
+    train_size = int(0.8 * len(dataset))
+    test_size = len(dataset) - train_size
+
+    train_dataset, test_dataset = random_split(
+        dataset,
+        [train_size, test_size]
+    )
+
+    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=8)
+
+    return train_loader, test_loader

@@ -9,7 +9,7 @@ class ChordDataset(Dataset):
     def __init__(self, root_dir):
         self.data = []
         self.labels = []
-        self.label_map = {'C':0, 'G':1, 'D':2}
+        self.label_map = {'A':0,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6}
 
         for label in os.listdir(root_dir):
             folder = os.path.join(root_dir, label)

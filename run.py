@@ -1,29 +1,15 @@
-from CNN import ChordCNN, get_accuracy, training_loop, load_model
-import ChordDataset
+from CNN import ChordCNN, get_accuracy, training_loop, load_model, initialize_dataset
 from ChordDataset import get_input
 import torch
-from torch.utils.data import DataLoader
-from torch.utils.data import random_split
 from datetime import datetime
 import os
 
-
 if __name__ == "__main__":
     model = ChordCNN()
+    chords = {"0": "A", "1": "B", "2": "C", "3": "D", "4": "E", "5": "F", "6": "G"}
 
-    dataset = ChordDataset.ChordDataset("data/")
-    chords = {"0": "C", "1": "G", "2": "D"}
-
-    train_size = int(0.8 * len(dataset))
-    test_size = len(dataset) - train_size
-
-    train_dataset, test_dataset = random_split(
-        dataset,
-        [train_size, test_size]
-    )
-
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=8)
+    train_loader = None
+    test_loader = None
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -43,11 +29,17 @@ if __name__ == "__main__":
 
         match choice:
             case "1":
+                if not model.dataset_loaded:
+                    train_loader, test_loader = initialize_dataset()
+                    model.dataset_loaded = True
                 epochs = input("Please enter number of epochs: ")
                 training_loop(epochs, model, train_loader, criterion, optimizer)
-                torch.save(model.state_dict(), datetime.now().strftime("weights-%Y-%m-%d_%H-%M-%S.pt"))
+                torch.save(model.state_dict(), datetime.now().strftime("2-0-weights-%Y-%m-%d_%H-%M-%S.pt"))
                 get_accuracy(model, test_loader)
             case "2":
+                if not model.dataset_loaded:
+                    train_loader, test_loader = initialize_dataset()
+                    model.dataset_loaded = True
                 get_accuracy(model, test_loader)
             case "3":
                 load_model(model)
